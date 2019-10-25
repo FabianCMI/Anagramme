@@ -55,7 +55,11 @@ void word_array_search_anagrams(const struct word_array *self, const char *word,
 
 void word_array_sort(struct word_array *self) {}
 
-void word_array_print(const struct word_array *self) {}
+void word_array_print(const struct word_array *self) {
+    for (size_t i = 0; i < self->size; i++) {
+        printf("%s\n", self->data[i]);
+    }
+}
 
 void word_array_read_file(struct word_array *self, const char *filename) {
     char word[WORD_LETTERS_MAX];

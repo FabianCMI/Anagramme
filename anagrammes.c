@@ -70,6 +70,7 @@ void word_array_create(struct word_array *self) {
     self->size = 0;
     self->capacity = 10;
     self->data = calloc(self->capacity, sizeof(char *));
+    *self->data = NULL;
 }
 
 void word_array_destroy(struct word_array *self) {
@@ -131,62 +132,62 @@ void word_array_print(const struct word_array *self) {
     for (size_t i = 0; i < self->size; i++) {
         printf("%s\n", self->data[i]);
     }
+}
 
-    void word_array_read_file(struct word_array * self, const char *filename) {
-        char word[WORD_LETTERS_MAX];
+void word_array_read_file(struct word_array *self, const char *filename) {
+    char word[WORD_LETTERS_MAX];
 
-        FILE *fp = fopen(filename, "r");
+    FILE *fp = fopen(filename, "r");
 
-        if (fp == NULL) {
-            fprintf(stderr, "Error when opening file '%s'\n", filename);
-            return;
-        }
-
-        while (!feof(fp)) {
-            fgets(word, WORD_LETTERS_MAX, fp);
-            clean_newline(word, WORD_LETTERS_MAX);
-            word_array_add(self, word);
-        }
-
-        fclose(fp);
+    if (fp == NULL) {
+        fprintf(stderr, "Error when opening file '%s'\n", filename);
+        return;
     }
 
-    // Part 3
-
-    void word_dict_bucket_destroy(struct word_dict_bucket * bucket) {}
-
-    struct word_dict_bucket *word_dict_bucket_add(
-        struct word_dict_bucket * bucket, const char *word) {
-        return NULL;
+    while (!feof(fp)) {
+        fgets(word, WORD_LETTERS_MAX, fp);
+        clean_newline(word, WORD_LETTERS_MAX);
+        word_array_add(self, word);
     }
 
-    void word_dict_create(struct word_dict * self) {}
+    fclose(fp);
+}
 
-    void word_dict_destroy(struct word_dict * self) {}
+// Part 3
 
-    size_t fnv_hash(const char *key) { return 0; }
+void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {}
 
-    void word_dict_rehash(struct word_dict * self) {}
+struct word_dict_bucket *word_dict_bucket_add(struct word_dict_bucket *bucket,
+                                              const char *word) {
+    return NULL;
+}
 
-    void word_dict_add(struct word_dict * self, const char *word) {}
+void word_dict_create(struct word_dict *self) {}
 
-    void word_dict_fill_with_array(struct word_dict * self,
-                                   const struct word_array *array) {}
+void word_dict_destroy(struct word_dict *self) {}
 
-    void word_dict_search_anagrams(const struct word_dict *self,
-                                   const char *word,
-                                   struct word_array *result) {}
+size_t fnv_hash(const char *key) { return 0; }
 
-    // Part 4
+void word_dict_rehash(struct word_dict *self) {}
 
-    void wildcard_create(struct wildcard * self) {}
+void word_dict_add(struct word_dict *self, const char *word) {}
 
-    void wildcard_search(struct wildcard * self, const char *word) {}
+void word_dict_fill_with_array(struct word_dict *self,
+                               const struct word_array *array) {}
 
-    void word_array_search_anagrams_wildcard(const struct word_array *self,
-                                             const char *word,
-                                             struct word_array *result) {}
+void word_dict_search_anagrams(const struct word_dict *self, const char *word,
+                               struct word_array *result) {}
 
-    void word_dict_search_anagrams_wildcard(const struct word_dict *self,
-                                            const char *word,
-                                            struct word_array *result) {}
+// Part 4
+
+void wildcard_create(struct wildcard *self) {}
+
+void wildcard_search(struct wildcard *self, const char *word) {}
+
+void word_array_search_anagrams_wildcard(const struct word_array *self,
+                                         const char *word,
+                                         struct word_array *result) {}
+
+void word_dict_search_anagrams_wildcard(const struct word_dict *self,
+                                        const char *word,
+                                        struct word_array *result) {}

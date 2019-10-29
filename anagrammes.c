@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Fonction permettant d'augmenter la capacité d'un tableau de mot
 static void word_array_grow(struct word_array *self) {
     size_t capacity = self->capacity * 2;
     char **new_array = calloc(capacity, sizeof(char *));

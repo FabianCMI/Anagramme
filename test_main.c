@@ -13,10 +13,15 @@ int main(int argc, char *argv[]) {
     printf("%d\n", is_ana);
     struct word_array *test;
     word_array_create(test);
-    *(test->data) = str1;
-    *(test->data + 1) = str2;
-    *(test->data + 2) = string_duplicate(str1);
-    test->size = 3;
+    word_array_add(test, str1);
+    word_array_add(test, str2);
+    word_array_add(test, string_duplicate(str1));
+    // test pour voir si le array_grow marche bien
+    for (size_t i = 0; i < 15; i++) {
+        word_array_add(test, str1);
+    }
+    string_sort_letters(*test->data);
     word_array_print(test);
+    word_array_destroy(test);
     return 0;
 }

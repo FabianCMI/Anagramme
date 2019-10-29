@@ -74,21 +74,24 @@ void word_array_create(struct word_array *self) {
     *self->data = NULL;
 }
 
+// Détruit un tableau de mot
 void word_array_destroy(struct word_array *self) {
     for (size_t i = 0; i < self->capacity; i++) {
-        free(self->data[i]);
+        free(*(self->data + i));
     }
     self->capacity = 0;
     self->size = 0;
     free(self->data);
 }
 
+// Ajoute une string à la fin du tableau
 void word_array_add(struct word_array *self, const char *word) {
     char *p = string_duplicate(word);
-    if (self->size == self->capacity) {
+    if (self->size >= self->capacity) {
         word_array_grow(self);
     }
     self->data[self->size] = p;
+    self->size++;
 }
 
 void word_array_search_anagrams(const struct word_array *self, const char *word,

@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
     word_array_create(test);
     *(test->data) = str1;
     *(test->data + 1) = str2;
-    test->size = 2;
+    *(test->data + 2) = string_duplicate(str1);
+    test->size = 3;
     word_array_print(test);
     return 0;
 }

@@ -72,7 +72,13 @@ void string_sort_letters(char *str) {
     }
 }
 
-void clean_newline(char *buf, size_t size) {}
+void clean_newline(char *buf, size_t size) {
+    for (size_t i = 0; i < size; i++) {
+        if (buf[i] == '\n') {
+            buf[i] = '\0';
+        }
+    }
+}
 
 // Part 2
 

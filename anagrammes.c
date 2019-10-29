@@ -27,14 +27,23 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     // On crée un tableau pour compter les occurences des 26 lettres de
     // l'alphabet
     int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(char));
-
+    // On initialise toutes les valeurs du tableau à 0
+    for (size_t i = 0; i < LETTER_NUMBER; i++) {
+        tab_letters_count[i] = 0;
+    }
     // On parcourt la première chaine et on incrémente le nombre de chaque
-    // lettre à chaque fois qu'elle apparait dans le mot.En parallèle on
+    // lettre à chaque fois qu'elle apparait dans le mot. En parallèle on
     // parcourt la deuxième chaine et on décrémente à chaque occurence des
     // lettres
+    size_t letter_num_1 = 0;
+    size_t letter_num_2 = 0;
     for (size_t i = 0; i < length; ++i) {
-        tab_letters_count[str1[i] - 'a']++;
-        tab_letters_count[str2[i] - 'a']--;
+        letter_num_1 = str1[i] - 'a';
+        letter_num_2 = str2[i] - 'a';
+        assert(letter_num_1 < 26);
+        assert(letter_num_2 < 26);
+        tab_letters_count[letter_num_1]++;
+        tab_letters_count[letter_num_2]--;
     }
     // Si toutes les cases (donc le compte des lettres) sont égales à 0, alors
     // les mots sont des anagrammes

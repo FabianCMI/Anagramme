@@ -40,8 +40,8 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     for (size_t i = 0; i < length; ++i) {
         letter_num_1 = str1[i] - 'a';
         letter_num_2 = str2[i] - 'a';
-        assert(letter_num_1 < 26);
-        assert(letter_num_2 < 26);
+        assert(letter_num_1 <= 26);
+        assert(letter_num_2 <= 26);
         tab_letters_count[letter_num_1]++;
         tab_letters_count[letter_num_2]--;
     }
@@ -78,17 +78,17 @@ void string_sort_letters(char *str) {
 void clean_newline(char *buf, size_t size) {
     // On remplace le caractère de fin de ligne par le caractère nul
     for (size_t i = 0; i < size; i++) {
-        if (buf[i] == '\n') {
+        if (buf[i] == '\n' || buf[i] == '\r') {
             buf[i] = '\0';
+            return;
         }
     }
 }
 
 /******************* Part 2 *********************/
 // Fonction pour copier un tableau de mot
-void word_array_copy(const struct word_array *source, struct word_array *dest) {
-    dest->capacity = source->capacity;
-    dest->size = source->size;
+static void word_array_copy(const struct word_array *source,
+                            struct word_array *dest) {
     for (size_t i = 0; i < source->size; i++) {
         word_array_add(dest, *(source->data + i));
     }
@@ -109,6 +109,7 @@ void word_array_destroy(struct word_array *self) {
     self->capacity = 0;
     self->size = 0;
     free(self->data);
+    free(self);
 }
 
 // Ajoute une string à la fin du tableau
@@ -123,23 +124,21 @@ void word_array_add(struct word_array *self, const char *word) {
 
 void word_array_search_anagrams(const struct word_array *self, const char *word,
                                 struct word_array *result) {
-    // On crée un dictionnaire temporaire
-    struct word_array *temp_dico = calloc(self->capacity, sizeof(char *));
+    // On crée un tableau de mots temporaire
+    struct word_array *tmp_word_array = malloc(sizeof(struct word_array));
+    word_array_create(tmp_word_array);
+
     // Copie de self dans le temporaire afin de pouvoir traiter ses mots sans
-    // changer l'origine
-    word_array_copy(self, temp_dico);
-
-    // On trie d'abord à l'intérieur du dictionnaire tous les caractères de ses
-    // mots, puis on trie les mots eux-même
-    for (size_t i = 0; i < temp_dico->size; i++) {
-        string_sort_letters(*(temp_dico->data + i));
+    // changer l'original
+    word_array_copy(self, tmp_word_array);
+    // Recherche des anagrammes en O(n²)
+    for (size_t i = 0; i < tmp_word_array->size; i++) {
+        if (string_are_anagrams(word, *(tmp_word_array->data + i))) {
+            word_array_add(result, *(tmp_word_array->data + i));
+        }
     }
-    word_array_sort(temp_dico);
-
-    // On fait ensuite une recherche dichotomique dans le dictionnaire
-
     // Libération de la mémoire
-    word_array_destroy(temp_dico);
+    word_array_destroy(tmp_word_array);
 }
 
 // Fonctions nécéssaires au quick sort

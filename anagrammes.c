@@ -26,7 +26,7 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     const size_t LETTER_NUMBER = 26;
     // On crée un tableau pour compter les occurences des 26 lettres de
     // l'alphabet
-    int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(char));
+    int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(int));
     // On initialise toutes les valeurs du tableau à 0
     for (size_t i = 0; i < LETTER_NUMBER; i++) {
         tab_letters_count[i] = 0;
@@ -85,6 +85,14 @@ void clean_newline(char *buf, size_t size) {
 }
 
 /******************* Part 2 *********************/
+// Fonction pour copier un tableau de mot
+void word_array_copy(const struct word_array *source, struct word_array *dest) {
+    dest->capacity = source->capacity;
+    dest->size = source->size;
+    for (size_t i = 0; i < source->size; i++) {
+        word_array_add(dest, *(source->data + i));
+    }
+}
 
 void word_array_create(struct word_array *self) {
     self->size = 0;
@@ -114,7 +122,25 @@ void word_array_add(struct word_array *self, const char *word) {
 }
 
 void word_array_search_anagrams(const struct word_array *self, const char *word,
-                                struct word_array *result) {}
+                                struct word_array *result) {
+    // On crée un dictionnaire temporaire
+    struct word_array *temp_dico = calloc(self->capacity, sizeof(char *));
+    // Copie de self dans le temporaire afin de pouvoir traiter ses mots sans
+    // changer l'origine
+    word_array_copy(self, temp_dico);
+
+    // On trie d'abord à l'intérieur du dictionnaire tous les caractères de ses
+    // mots, puis on trie les mots eux-même
+    for (size_t i = 0; i < temp_dico->size; i++) {
+        string_sort_letters(*(temp_dico->data + i));
+    }
+    word_array_sort(temp_dico);
+
+    // On fait ensuite une recherche dichotomique dans le dictionnaire
+
+    // Libération de la mémoire
+    word_array_destroy(temp_dico);
+}
 
 // Fonctions nécéssaires au quick sort
 // Echange de données

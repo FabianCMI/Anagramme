@@ -7,7 +7,7 @@
 #include <string.h>
 
 int main(int argc, char *argv[]) {
-    char str1[] = "hello";
+    char str1[] = "helwo";
     char str2[] = "hello";
     bool is_ana = string_are_anagrams(str1, str2);
     printf("%d\n", is_ana);
@@ -23,10 +23,5 @@ int main(int argc, char *argv[]) {
     string_sort_letters(*test->data);
     word_array_print(test);
     word_array_destroy(test);
-    if(str1 < str2 ){
-        printf(" 2 ");
-    } else {
-        printf(" 1 ");
-    }
     return 0;
 }

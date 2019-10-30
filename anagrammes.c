@@ -16,7 +16,7 @@ static void word_array_grow(struct word_array *self) {
     self->capacity = capacity;
 }
 
-// Part 1
+/******************* Part 1 *********************/
 
 bool string_are_anagrams(const char *str1, const char *str2) {
     size_t length = strlen(str1);
@@ -49,9 +49,11 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     // les mots sont des anagrammes
     for (size_t i = 0; i < LETTER_NUMBER; i++) {
         if (tab_letters_count[i] != 0) {
+            free(tab_letters_count);
             return false;
         }
     }
+    free(tab_letters_count);
     return true;
 }
 
@@ -61,6 +63,7 @@ char *string_duplicate(const char *str) {
 }
 
 void string_sort_letters(char *str) {
+    // Tri par insertion
     for (size_t i = 1; i < strlen(str); ++i) {
         char x = str[i];
         size_t j = i;
@@ -73,6 +76,7 @@ void string_sort_letters(char *str) {
 }
 
 void clean_newline(char *buf, size_t size) {
+    // On remplace le caractère de fin de ligne par le caractère nul
     for (size_t i = 0; i < size; i++) {
         if (buf[i] == '\n') {
             buf[i] = '\0';
@@ -80,7 +84,7 @@ void clean_newline(char *buf, size_t size) {
     }
 }
 
-// Part 2
+/******************* Part 2 *********************/
 
 void word_array_create(struct word_array *self) {
     self->size = 0;
@@ -112,12 +116,15 @@ void word_array_add(struct word_array *self, const char *word) {
 void word_array_search_anagrams(const struct word_array *self, const char *word,
                                 struct word_array *result) {}
 
+// Fonctions nécéssaires au quick sort
+// Echange de données
 static void array_swap(int *data, size_t i, size_t j) {
     int tmp = data[i];
     data[i] = data[j];
     data[j] = tmp;
 }
 
+// partitionomenent d'un tableau
 static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
     ptrdiff_t pivot_index = i;
     const int pivot = data[pivot_index];
@@ -133,6 +140,7 @@ static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
     return l;
 }
 
+// Tri récursif des deux moitiés du tableau
 static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
     if (i < j) {
         ptrdiff_t p = array_partition(data, i, j);
@@ -140,7 +148,7 @@ static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
         array_quick_sort_partial(data, p + 1, j);
     }
 }
-
+// Tri optimal pour l'array sort
 static void array_quick_sort(int *data, size_t n) {
     array_quick_sort_partial(data, 0, n - 1);
 }
@@ -172,7 +180,7 @@ void word_array_read_file(struct word_array *self, const char *filename) {
     fclose(fp);
 }
 
-// Part 3
+/******************* Part 3 *********************/
 
 void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {}
 
@@ -197,7 +205,7 @@ void word_dict_fill_with_array(struct word_dict *self,
 void word_dict_search_anagrams(const struct word_dict *self, const char *word,
                                struct word_array *result) {}
 
-// Part 4
+/******************* Part 4 *********************/
 
 void wildcard_create(struct wildcard *self) {}
 

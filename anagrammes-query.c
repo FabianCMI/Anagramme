@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
     struct word_array *dico;
     word_array_create(dico);
     word_array_read_file(dico, "dictionnaire.txt");
+    word_array_print(dico);
     // On assure de bien avoir réussi à charger tout les mots
     assert(dico->size = 325129);
     for (;;) {
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
+    // On libère la mémoire prise par le dictionnaire
     word_array_destroy(dico);
     return 0;
 }

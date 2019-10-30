@@ -23,5 +23,10 @@ int main(int argc, char *argv[]) {
     string_sort_letters(*test->data);
     word_array_print(test);
     word_array_destroy(test);
+    if(str1 < str2 ){
+        printf(" 2 ");
+    } else {
+        printf(" 1 ");
+    }
     return 0;
 }

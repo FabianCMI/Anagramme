@@ -78,7 +78,7 @@ void string_sort_letters(char *str) {
 void clean_newline(char *buf, size_t size) {
     // On remplace le caractère de fin de ligne par le caractère nul
     for (size_t i = 0; i < size; i++) {
-        if (buf[i] == '\n' || buf[i] == '\r') {
+        if (buf[i] < '\n' || buf[i] == '\r') {
             buf[i] = '\0';
             return;
         }

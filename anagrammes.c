@@ -88,6 +88,7 @@ void word_array_add(struct word_array *self, const char *word) {
         word_array_grow(self);
     }
     self->data[self->size] = p;
+    self->size++;
 }
 
 void word_array_search_anagrams(const struct word_array *self, const char *word,
@@ -122,11 +123,35 @@ static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
     }
 }
 
-static void array_quick_sort(int *data, size_t n) {
+static void array_quick_sort(char *data, size_t n) {
     array_quick_sort_partial(data, 0, n - 1);
 }
 
-void word_array_sort(struct word_array *self) {}
+void word_array_sort(struct word_array *self) {
+    //On malloc un tableau de char de taille self->size;
+    char *st = calloc(self->size, sizeof(char));
+    //On y met la première lettre de chaque mot;
+    for (size_t i=0; i<n-1; i++){
+        *st=*((array->data+i)[0]);
+        st++;
+    }
+    // En parallèle : tri du tableau de char et tri du tableau de mot (dans même fonction)
+    array_quick_sort(st, self->size);
+    //On verif dans le tableau de char si il y a des lettres égales
+    //Si oui, on met la deuxième lettre des mots comportants des lettres égales dans le tableau de char puis
+    //En parallèle : tri du tableau de char (partiellement) et tri du tableau de mot (partiellement)
+    for {
+    while(st[i]=st[j]){
+        st[j] = *((array->data+i)[1]);
+        j++;
+    }
+    if{
+        array_quick_sort_partial(st, self->size);
+    }
+    }
+    //On vérifie dans les plages si il y a des lettres égales
+    //Si oui, on met la troisième lettre, etc...
+}
 
 void word_array_print(const struct word_array *self) {
     for (size_t i = 0; i < self->size; i++) {

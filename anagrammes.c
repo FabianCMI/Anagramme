@@ -78,7 +78,7 @@ void string_sort_letters(char *str) {
 void clean_newline(char *buf, size_t size) {
     // On remplace le caractère de fin de ligne par le caractère nul
     for (size_t i = 0; i < size; i++) {
-        if (buf[i] < '\n' || buf[i] == '\r') {
+        if (buf[i] == '\n' || buf[i] == '\r') {
             buf[i] = '\0';
             return;
         }
@@ -232,7 +232,7 @@ void word_dict_search_anagrams(const struct word_dict *self, const char *word,
 
 /******************* Part 4 *********************/
 
-void wildcard_create(struct wildcard *self) {}
+void wildcard_create(struct wildcard *self) { self->count = 0; }
 
 void wildcard_search(struct wildcard *self, const char *word) {}
 

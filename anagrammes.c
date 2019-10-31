@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Fonction permettant d'augmenter la capacité d'un tableau de mot
 static void word_array_grow(struct word_array *self) {
     size_t capacity = self->capacity * 2;
     char **new_array = calloc(capacity, sizeof(char *));
@@ -15,7 +16,7 @@ static void word_array_grow(struct word_array *self) {
     self->capacity = capacity;
 }
 
-// Part 1
+/******************* Part 1 *********************/
 
 bool string_are_anagrams(const char *str1, const char *str2) {
     size_t length = strlen(str1);
@@ -25,23 +26,34 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     const size_t LETTER_NUMBER = 26;
     // On crée un tableau pour compter les occurences des 26 lettres de
     // l'alphabet
-    int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(char));
-
+    int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(int));
+    // On initialise toutes les valeurs du tableau à 0
+    for (size_t i = 0; i < LETTER_NUMBER; i++) {
+        tab_letters_count[i] = 0;
+    }
     // On parcourt la première chaine et on incrémente le nombre de chaque
-    // lettre à chaque fois qu'elle apparait dans le mot.En parallèle on
+    // lettre à chaque fois qu'elle apparait dans le mot. En parallèle on
     // parcourt la deuxième chaine et on décrémente à chaque occurence des
     // lettres
+    size_t letter_num_1 = 0;
+    size_t letter_num_2 = 0;
     for (size_t i = 0; i < length; ++i) {
-        tab_letters_count[str1[i] - 'a']++;
-        tab_letters_count[str2[i] - 'a']--;
+        letter_num_1 = str1[i] - 'a';
+        letter_num_2 = str2[i] - 'a';
+        assert(letter_num_1 <= 26);
+        assert(letter_num_2 <= 26);
+        tab_letters_count[letter_num_1]++;
+        tab_letters_count[letter_num_2]--;
     }
     // Si toutes les cases (donc le compte des lettres) sont égales à 0, alors
     // les mots sont des anagrammes
     for (size_t i = 0; i < LETTER_NUMBER; i++) {
         if (tab_letters_count[i] != 0) {
+            free(tab_letters_count);
             return false;
         }
     }
+    free(tab_letters_count);
     return true;
 }
 
@@ -51,6 +63,7 @@ char *string_duplicate(const char *str) {
 }
 
 void string_sort_letters(char *str) {
+    // Tri par insertion
     for (size_t i = 1; i < strlen(str); ++i) {
         char x = str[i];
         size_t j = i;
@@ -62,9 +75,24 @@ void string_sort_letters(char *str) {
     }
 }
 
-void clean_newline(char *buf, size_t size) {}
+void clean_newline(char *buf, size_t size) {
+    // On remplace le caractère de fin de ligne par le caractère nul
+    for (size_t i = 0; i < size; i++) {
+        if (buf[i] < '\n' || buf[i] == '\r') {
+            buf[i] = '\0';
+            return;
+        }
+    }
+}
 
-// Part 2
+/******************* Part 2 *********************/
+// Fonction pour copier un tableau de mot
+static void word_array_copy(const struct word_array *source,
+                            struct word_array *dest) {
+    for (size_t i = 0; i < source->size; i++) {
+        word_array_add(dest, *(source->data + i));
+    }
+}
 
 void word_array_create(struct word_array *self) {
     self->size = 0;
@@ -73,18 +101,21 @@ void word_array_create(struct word_array *self) {
     *self->data = NULL;
 }
 
+// Détruit un tableau de mot
 void word_array_destroy(struct word_array *self) {
     for (size_t i = 0; i < self->capacity; i++) {
-        free(self->data[i]);
+        free(*(self->data + i));
     }
     self->capacity = 0;
     self->size = 0;
     free(self->data);
+    free(self);
 }
 
+// Ajoute une string à la fin du tableau
 void word_array_add(struct word_array *self, const char *word) {
     char *p = string_duplicate(word);
-    if (self->size == self->capacity) {
+    if (self->size >= self->capacity) {
         word_array_grow(self);
     }
     self->data[self->size] = p;
@@ -92,14 +123,33 @@ void word_array_add(struct word_array *self, const char *word) {
 }
 
 void word_array_search_anagrams(const struct word_array *self, const char *word,
-                                struct word_array *result) {}
+                                struct word_array *result) {
+    // On crée un tableau de mots temporaire
+    struct word_array *tmp_word_array = malloc(sizeof(struct word_array));
+    word_array_create(tmp_word_array);
 
+    // Copie de self dans le temporaire afin de pouvoir traiter ses mots sans
+    // changer l'original
+    word_array_copy(self, tmp_word_array);
+    // Recherche des anagrammes en O(n²)
+    for (size_t i = 0; i < tmp_word_array->size; i++) {
+        if (string_are_anagrams(word, *(tmp_word_array->data + i))) {
+            word_array_add(result, *(tmp_word_array->data + i));
+        }
+    }
+    // Libération de la mémoire
+    word_array_destroy(tmp_word_array);
+}
+
+// Fonctions nécéssaires au quick sort
+// Echange de données
 static void array_swap(int *data, size_t i, size_t j) {
     int tmp = data[i];
     data[i] = data[j];
     data[j] = tmp;
 }
 
+// partitionomenent d'un tableau
 static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
     ptrdiff_t pivot_index = i;
     const int pivot = data[pivot_index];
@@ -115,6 +165,7 @@ static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
     return l;
 }
 
+// Tri récursif des deux moitiés du tableau
 static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
     if (i < j) {
         ptrdiff_t p = array_partition(data, i, j);
@@ -122,8 +173,8 @@ static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
         array_quick_sort_partial(data, p + 1, j);
     }
 }
-
-static void array_quick_sort(char *data, size_t n) {
+// Tri optimal pour l'array sort
+static void array_quick_sort(int *data, size_t n) {
     array_quick_sort_partial(data, 0, n - 1);
 }
 
@@ -178,7 +229,7 @@ void word_array_read_file(struct word_array *self, const char *filename) {
     fclose(fp);
 }
 
-// Part 3
+/******************* Part 3 *********************/
 
 void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {}
 
@@ -203,7 +254,7 @@ void word_dict_fill_with_array(struct word_dict *self,
 void word_dict_search_anagrams(const struct word_dict *self, const char *word,
                                struct word_array *result) {}
 
-// Part 4
+/******************* Part 4 *********************/
 
 void wildcard_create(struct wildcard *self) {}
 

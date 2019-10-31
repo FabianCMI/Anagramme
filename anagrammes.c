@@ -58,7 +58,7 @@ bool string_are_anagrams(const char *str1, const char *str2) {
 }
 
 char *string_duplicate(const char *str) {
-    char *st = calloc(strlen(str), sizeof(char));
+    char *st = calloc(strlen(str)+1, sizeof(char));
     return strcpy(st, str);
 }
 
@@ -179,6 +179,7 @@ static void array_quick_sort(int *data, size_t n) {
 }
 
 void word_array_sort(struct word_array *self) {
+    /*
     //On malloc un tableau de char de taille self->size;
     char *st = calloc(self->size, sizeof(char));
     //On y met la première lettre de chaque mot;
@@ -202,6 +203,7 @@ void word_array_sort(struct word_array *self) {
     }
     //On vérifie dans les plages si il y a des lettres égales
     //Si oui, on met la troisième lettre, etc...
+    */
 }
 
 void word_array_print(const struct word_array *self) {

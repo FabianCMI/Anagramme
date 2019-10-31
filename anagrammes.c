@@ -19,13 +19,17 @@ static void word_array_grow(struct word_array *self) {
 /******************* Part 1 *********************/
 
 bool string_are_anagrams(const char *str1, const char *str2) {
+    // Si deux mots n'ont pas la même taille ils ne peuvent pas être des
+    // anagrammes, donc on arrête le traitement
     size_t length = strlen(str1);
     if (length != strlen(str2)) {
         return false;
     }
-    const size_t LETTER_NUMBER = 26;
+    // Constante pour la taille d'un tableau contenant les 26 lettres de
+    // l'alphabet + une case pour les jokers
+    const size_t LETTER_NUMBER = 27;
     // On crée un tableau pour compter les occurences des 26 lettres de
-    // l'alphabet
+    // l'alphabet et des jokers
     int *tab_letters_count = calloc(LETTER_NUMBER, sizeof(int));
     // On initialise toutes les valeurs du tableau à 0
     for (size_t i = 0; i < LETTER_NUMBER; i++) {
@@ -38,27 +42,53 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     size_t letter_num_1 = 0;
     size_t letter_num_2 = 0;
     for (size_t i = 0; i < length; ++i) {
-        letter_num_1 = str1[i] - 'a';
+        // S'il y a un joker on l'ajoute dans la 27ème case du tableau
+        if (str1[i] == '*' && tab_letters_count[LETTER_NUMBER - 1] < 4) {
+            letter_num_1 = LETTER_NUMBER - 1;
+        } else {
+            letter_num_1 = str1[i] - 'a';
+        }
         letter_num_2 = str2[i] - 'a';
-        assert(letter_num_1 <= 26);
-        assert(letter_num_2 <= 26);
+        // On s'assure qu'il n'y ai pas d'accès hors du tableau possible
+        if (letter_num_1 >= LETTER_NUMBER || letter_num_2 >= LETTER_NUMBER) {
+            free(tab_letters_count);
+            return false;
+        }
+        assert(letter_num_1 < LETTER_NUMBER);
+        assert(letter_num_2 < LETTER_NUMBER);
         tab_letters_count[letter_num_1]++;
         tab_letters_count[letter_num_2]--;
     }
     // Si toutes les cases (donc le compte des lettres) sont égales à 0, alors
     // les mots sont des anagrammes
     for (size_t i = 0; i < LETTER_NUMBER; i++) {
-        if (tab_letters_count[i] != 0) {
+        if (tab_letters_count[i] > 0) {
+            // Si une lettre de la premiere chaine n'est pas dans la deuxième,
+            // alors les mots ne sont pas des anagrammes
             free(tab_letters_count);
             return false;
         }
+        if (tab_letters_count[i] < 0) {
+            // Si une lettre de la 2eme chaine est n'est pas dans la première,
+            // on l'incrémente mais on décrémente le compteur de jokers pour
+            // conpenser. Si celui-ci est négatif c'est que les mots ne sont pas
+            // des anagrammes
+            tab_letters_count[LETTER_NUMBER - 1]--;
+            tab_letters_count[i]++;
+            if (tab_letters_count[LETTER_NUMBER < 0]) {
+                free(tab_letters_count);
+                return false;
+            }
+        }
     }
+    // Si les conditions précédentes sont passées c'est que les mots sont des
+    // anagrammes
     free(tab_letters_count);
     return true;
 }
 
 char *string_duplicate(const char *str) {
-    char *st = calloc(strlen(str), sizeof(char));
+    char *st = calloc(strlen(str) + 1, sizeof(char));
     return strcpy(st, str);
 }
 
@@ -97,7 +127,7 @@ static void word_array_copy(const struct word_array *source,
 void word_array_create(struct word_array *self) {
     self->size = 0;
     self->capacity = 10;
-    self->data = calloc(self->capacity, sizeof(char *));
+    self->data = calloc(self->capacity, sizeof(char **));
     *self->data = NULL;
 }
 
@@ -231,14 +261,39 @@ void word_dict_search_anagrams(const struct word_dict *self, const char *word,
                                struct word_array *result) {}
 
 /******************* Part 4 *********************/
+// Implémentation de ces fonctions finalement inutilisée car il a été jugé plus
+// intuitif de les prendre directement en compte dans la fonction
+// strings_are_anagrams
+void wildcard_create(struct wildcard *self) { self->count = 0; }
 
-void wildcard_create(struct wildcard *self) {}
-
-void wildcard_search(struct wildcard *self, const char *word) {}
+void wildcard_search(struct wildcard *self, const char *word) {
+    size_t i = 0;
+    while (word[i] != '\0') {
+        if (self->count >= 4) {
+            return;
+        }
+        if (word[i] == '*') {
+            self->count++;
+            self->index[self->count - 1] = i;
+        }
+        i++;
+    }
+}
 
 void word_array_search_anagrams_wildcard(const struct word_array *self,
                                          const char *word,
-                                         struct word_array *result) {}
+                                         struct word_array *result) {
+    struct wildcard *jokers = malloc(sizeof(struct wildcard));
+    wildcard_create(jokers);
+    wildcard_search(jokers, word);
+    if (jokers->count == 0) {
+        word_array_search_anagrams(self, word, result);
+        free(jokers);
+        return;
+    }
+
+    free(jokers);
+}
 
 void word_dict_search_anagrams_wildcard(const struct word_dict *self,
                                         const char *word,

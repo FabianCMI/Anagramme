@@ -24,6 +24,12 @@ int main(int argc, char *argv[]) {
     word_array_print(test);
     struct wildcard *joker = malloc(sizeof(struct wildcard));
     wildcard_create(joker);
+    wildcard_search(joker, "ab*c*d");
+    printf("\n%zu\n", joker->count);
+    for (size_t i = 0; i < joker->count; i++) {
+        printf("%zu\n", joker->index[i]);
+    }
+
     word_array_destroy(test);
     return 0;
 }

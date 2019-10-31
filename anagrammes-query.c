@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
         double elapse = (end.tv_sec - start.tv_sec) +
                         (end.tv_usec - start.tv_usec) / MILLION;
         word_array_print(result);
-        printf("%zu anagrammes trouvés en %lfs !\n\n", result->size, elapse);
+        printf("%zu anagrammes trouvés en %lfs pour le mot %s !\n\n",
+               result->size, elapse, buf);
         // Libération de la mémoire prise par le tableau de réponses
         word_array_destroy(result);
     }

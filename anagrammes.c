@@ -58,7 +58,7 @@ bool string_are_anagrams(const char *str1, const char *str2) {
 }
 
 char *string_duplicate(const char *str) {
-    char *st = calloc(strlen(str), sizeof(char));
+    char *st = calloc(strlen(str) + 1, sizeof(char));
     return strcpy(st, str);
 }
 
@@ -97,7 +97,7 @@ static void word_array_copy(const struct word_array *source,
 void word_array_create(struct word_array *self) {
     self->size = 0;
     self->capacity = 10;
-    self->data = calloc(self->capacity, sizeof(char *));
+    self->data = calloc(self->capacity, sizeof(char **));
     *self->data = NULL;
 }
 

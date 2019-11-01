@@ -61,24 +61,35 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     }
     // Si toutes les cases (donc le compte des lettres) sont égales à 0, alors
     // les mots sont des anagrammes
-    for (size_t i = 0; i < LETTER_NUMBER; i++) {
+    size_t i = 0;
+    while (i < LETTER_NUMBER) {
+        // Si le compteur de la lettre est égal à 0, on passe à la lettre
+        // suivante
+        if (tab_letters_count[i] == 0) {
+            i++;
+            continue;
+        }
         if (tab_letters_count[i] > 0) {
             // Si une lettre de la premiere chaine n'est pas dans la deuxième,
             // alors les mots ne sont pas des anagrammes
             free(tab_letters_count);
             return false;
         }
-        if (tab_letters_count[i] < 0) {
-            // Si une lettre de la 2eme chaine est n'est pas dans la première,
-            // on l'incrémente mais on décrémente le compteur de jokers pour
-            // conpenser. Si celui-ci est négatif c'est que les mots ne sont pas
-            // des anagrammes
-            tab_letters_count[LETTER_NUMBER - 1]--;
-            tab_letters_count[i]++;
-            if (tab_letters_count[LETTER_NUMBER < 0]) {
-                free(tab_letters_count);
-                return false;
-            }
+
+        // Si une lettre de la 2eme chaine est n'est pas dans la première,
+        // on l'incrémente mais on décrémente le compteur de jokers pour
+        // conpenser. Si celui-ci est négatif c'est que les mots ne sont pas
+        // des anagrammes
+        tab_letters_count[LETTER_NUMBER - 1]--;
+        tab_letters_count[i]++;
+        if (tab_letters_count[LETTER_NUMBER - 1] < 0) {
+            free(tab_letters_count);
+            return false;
+        }
+        // On ne passe à la lettre suivante que si il ne reste plus d'occurences
+        // de celle en cours à traiter
+        if (tab_letters_count[i] == 0) {
+            i++;
         }
     }
     // Si les conditions précédentes sont passées c'est que les mots sont des

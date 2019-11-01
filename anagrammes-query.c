@@ -1,12 +1,11 @@
 #include "anagrammes.h"
 #include "assert.h"
-#include "time.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
 
 #define BUFSIZE 512
-#define BILLION 1E9
+#define MILLION 1E6
 
 int main(int argc, char *argv[]) {
     char buf[BUFSIZE];
@@ -17,7 +16,6 @@ int main(int argc, char *argv[]) {
 
     // On assure de bien avoir réussi à charger tout les mots
     assert(word_array->size = 325129);
-
     for (;;) {
         int test = gettimeofday();
         //struct timespec start, end;

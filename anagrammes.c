@@ -184,20 +184,20 @@ void word_array_search_anagrams(const struct word_array *self, const char *word,
 
 // Fonctions nécéssaires au quick sort
 // Echange de données
-static void array_swap(int *data, size_t i, size_t j) {
-    int tmp = data[i];
+static void array_swap(char **data, size_t i, size_t j) {
+    char *tmp = data[i];
     data[i] = data[j];
     data[j] = tmp;
 }
 
-// partitionomenent d'un tableau
-static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
+// partitionnemenent d'un tableau
+static ptrdiff_t array_partition(char **data, ptrdiff_t i, ptrdiff_t j) {
     ptrdiff_t pivot_index = i;
-    const int pivot = data[pivot_index];
+    const char *pivot = data[pivot_index];
     array_swap(data, pivot_index, j);
     ptrdiff_t l = i;
     for (ptrdiff_t k = i; k < j; ++k) {
-        if (data[k] < pivot) {
+        if (strcmp(data[k], pivot) < 0) {
             array_swap(data, k, l);
             l++;
         }
@@ -207,7 +207,7 @@ static ptrdiff_t array_partition(int *data, ptrdiff_t i, ptrdiff_t j) {
 }
 
 // Tri récursif des deux moitiés du tableau
-static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
+static void array_quick_sort_partial(char **data, ptrdiff_t i, ptrdiff_t j) {
     if (i < j) {
         ptrdiff_t p = array_partition(data, i, j);
         array_quick_sort_partial(data, i, p - 1);
@@ -215,11 +215,13 @@ static void array_quick_sort_partial(int *data, ptrdiff_t i, ptrdiff_t j) {
     }
 }
 // Tri optimal pour l'array sort
-static void array_quick_sort(int *data, size_t n) {
+static void array_quick_sort(char **data, size_t n) {
     array_quick_sort_partial(data, 0, n - 1);
 }
 
-void word_array_sort(struct word_array *self) {}
+void word_array_sort(struct word_array *self) {
+    array_quick_sort(self->data, self->size);
+}
 
 void word_array_print(const struct word_array *self) {
     for (size_t i = 0; i < self->size; i++) {
@@ -239,8 +241,10 @@ void word_array_read_file(struct word_array *self, const char *filename) {
 
     while (!feof(fp)) {
         fgets(word, WORD_LETTERS_MAX, fp);
-        clean_newline(word, WORD_LETTERS_MAX);
-        word_array_add(self, word);
+        if (!feof(fp)) {
+            clean_newline(word, WORD_LETTERS_MAX);
+            word_array_add(self, word);
+        }
     }
 
     fclose(fp);
@@ -248,32 +252,109 @@ void word_array_read_file(struct word_array *self, const char *filename) {
 
 /******************* Part 3 *********************/
 
-void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {}
+void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {
+    struct word_dict_bucket *curr;
+    curr = bucket;
+    while (curr) {
+        struct word_dict_bucket *tmp = curr;
+        curr = curr->next;
+        free(tmp);
+        tmp = NULL;
+    }
+    bucket = NULL;
+}
+
+struct word_dict_bucket *list_insert_back(struct word_dict_bucket *self,
+                                          const char *word) {
+    if (self == NULL) {
+        struct word_dict_bucket *last = malloc(sizeof(struct word_dict_bucket));
+        last->word = word;
+        last->next = NULL;
+        return last;
+    }
+    self->next = list_insert_back(self->next, word);
+    return self;
+}
 
 struct word_dict_bucket *word_dict_bucket_add(struct word_dict_bucket *bucket,
                                               const char *word) {
-    return NULL;
+    return list_insert_back(bucket, word);
 }
 
-void word_dict_create(struct word_dict *self) {}
+void word_dict_create(struct word_dict *self) {
+    self->count = 0;
+    self->size = 10;
+    self->buckets = malloc(self->size * sizeof(struct word_dict_bucket *));
+}
 
-void word_dict_destroy(struct word_dict *self) {}
-
-size_t fnv_hash(const char *key) { return 0; }
+void word_dict_destroy(struct word_dict *self) {
+    // On crée un pointeur curr qui pointe sur les cases du tableau(qui eux
+    // pointent sur une liste)
+    struct word_dict_bucket **curr = self->buckets;
+    // Pour toutes les cases du tableau
+    for (size_t i = 0; i < self->size; i++) {
+        // si le pointeur n'est pas null
+        if (self->buckets[i]) {
+            while (curr[i]) {
+                struct word_dict_bucket *tmp = curr[i];
+                curr[i] = curr[i]->next;
+                free(tmp);
+                tmp = NULL;
+            }
+            self->buckets[i] = NULL;
+        }
+    }
+    // On initialise le nombre d'éléments et la taille du tableau à 0
+    self->count = 0;
+    self->size = 0;
+}
+size_t fnv_hash(const char *key) {
+    // On duplique la clé afin de pouvoir la triée
+    char *key_cpy = string_duplicate(key);
+    string_sort_letters(key_cpy);
+    // On défini les constantes nécéssaires au hachâge
+    const size_t FNV_offset_basis = 14695981039346656037ul;
+    const size_t FNV_prime = 1099511628211ul;
+    // Algorithme FNV-1a
+    size_t hash = FNV_offset_basis;
+    size_t i = 0;
+    while (key_cpy[i] != '\0') {
+        hash = hash ^ key_cpy[i];
+        hash = hash * FNV_prime;
+        i++;
+    }
+    // On libère l'espace pris par la copie de la clé
+    free(key_cpy);
+    return hash;
+}
 
 void word_dict_rehash(struct word_dict *self) {}
 
-void word_dict_add(struct word_dict *self, const char *word) {}
+void word_dict_add(struct word_dict *self, const char *word) {
+    // On test si le facteur de compression est supérieur à 0,5
+    if (self->count / self->size >= 0.5) {
+        word_dict_rehash(self);
+    }
+    // Ensuite on ajoute le mot dans le bucket du dictionnaire à l'indice du
+    // hash modulo la taille du dictionnaire
+    const size_t hash = fnv_hash(word);
+    const size_t index = hash % self->size;
+    word_dict_bucket_add(self->buckets[index], word);
+}
 
 void word_dict_fill_with_array(struct word_dict *self,
-                               const struct word_array *array) {}
+                               const struct word_array *array) {
+    for (size_t i = 0; i < array->size; i++) {
+        word_dict_add(self, array->data[i]);
+    }
+}
 
 void word_dict_search_anagrams(const struct word_dict *self, const char *word,
                                struct word_array *result) {}
 
 /******************* Part 4 *********************/
-// Implémentation de ces fonctions finalement inutilisée car il a été jugé plus
-// intuitif de les prendre directement en compte dans la fonction
+// Implémentation de ces fonctions finalement inutilisée car il a été jugé
+// plus intuitif de les prendre directement en compte dans la fonction
 // strings_are_anagrams
 void wildcard_create(struct wildcard *self) { self->count = 0; }
 
@@ -294,16 +375,7 @@ void wildcard_search(struct wildcard *self, const char *word) {
 void word_array_search_anagrams_wildcard(const struct word_array *self,
                                          const char *word,
                                          struct word_array *result) {
-    struct wildcard *jokers = malloc(sizeof(struct wildcard));
-    wildcard_create(jokers);
-    wildcard_search(jokers, word);
-    if (jokers->count == 0) {
-        word_array_search_anagrams(self, word, result);
-        free(jokers);
-        return;
-    }
-
-    free(jokers);
+    word_array_search_anagrams(self, word, result);
 }
 
 void word_dict_search_anagrams_wildcard(const struct word_dict *self,

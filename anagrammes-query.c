@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     word_array_read_file(word_array, "dictionnaire.txt");
 
     // On assure de bien avoir réussi à charger tout les mots
-    assert(word_array->size = 325129);
+    assert(word_array->size == 325129);
     for (;;) {
         struct timeval start, end;
 
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         struct word_array *result = malloc(sizeof(struct word_array));
         word_array_create(result);
         gettimeofday(&start, NULL);
-        word_array_search_anagrams(word_array, buf, result);
+        word_array_search_anagrams_wildcard(word_array, buf, result);
         gettimeofday(&end, NULL);
         double elapse = (end.tv_sec - start.tv_sec) +
                         (end.tv_usec - start.tv_usec) / MILLION;

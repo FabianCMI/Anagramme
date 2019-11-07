@@ -16,6 +16,14 @@ int main(int argc, char *argv[]) {
 
     // On assure de bien avoir réussi à charger tout les mots
     assert(word_array->size == 325129);
+
+    // Création du dictionnaire
+    struct word_dict *dictionnaire = malloc(sizeof(struct word_dict));
+    word_dict_create(dictionnaire);
+    // word_dict_fill_with_array(dictionnaire, word_array);
+    word_dict_destroy(dictionnaire);
+    free(dictionnaire);
+
     for (;;) {
         struct timeval start, end;
 

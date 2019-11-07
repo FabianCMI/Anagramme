@@ -328,7 +328,10 @@ size_t fnv_hash(const char *key) {
     return hash;
 }
 
-void word_dict_rehash(struct word_dict *self) {}
+void word_dict_rehash(struct word_dict *self) {
+    // On double la taille du tableau
+    self->size *= 2;
+}
 
 void word_dict_add(struct word_dict *self, const char *word) {
     // On test si le facteur de compression est supérieur à 0,5
@@ -375,6 +378,8 @@ void wildcard_search(struct wildcard *self, const char *word) {
 void word_array_search_anagrams_wildcard(const struct word_array *self,
                                          const char *word,
                                          struct word_array *result) {
+    // On appelle la fonction de base puisque les wildcards sont déjà gérer
+    // dedans au lieu de dupliquer le code
     word_array_search_anagrams(self, word, result);
 }
 

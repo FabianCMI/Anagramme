@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     word_array_read_file(word_array, "dictionnaire.txt");
 
     // On assure de bien avoir réussi à charger tout les mots
-    assert(word_array->size = 325129);
+    assert(word_array->size == 325129);
     for (;;) {
         int test = gettimeofday();
         //struct timespec start, end;
@@ -30,12 +30,11 @@ int main(int argc, char *argv[]) {
         // Sinon on crée un tableau de mot pour stocker les anagrammes
         struct word_array *result = malloc(sizeof(struct word_array));
         word_array_create(result);
-        printf("%zu \n",result->size);
-        //clock_gettime(CLOCK_MONOTONIC, &start);
-        word_array_search_anagrams(word_array, buf, result);
-        //clock_gettime(CLOCK_MONOTONIC, &end);
-        //double elapse = (end.tv_sec - start.tv_sec) +
-        //                (end.tv_nsec - start.tv_nsec) / BILLION;
+        gettimeofday(&start, NULL);
+        word_array_search_anagrams_wildcard(word_array, buf, result);
+        gettimeofday(&end, NULL);
+        double elapse = (end.tv_sec - start.tv_sec) +
+                        (end.tv_usec - start.tv_usec) / MILLION;
         word_array_print(result);
         printf("%zu anagrammes trouvés en 0seconde !\n\n", result->size);
         // Libération de la mémoire prise par le tableau de réponses

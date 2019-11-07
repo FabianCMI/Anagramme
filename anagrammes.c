@@ -250,9 +250,17 @@ void word_dict_destroy(struct word_dict *self) {}
 
 size_t fnv_hash(const char *key) { return 0; }
 
-void word_dict_rehash(struct word_dict *self) {}
-
-void word_dict_add(struct word_dict *self, const char *word) {}
+void word_dict_add(struct word_dict *self, const char *word) {
+    // On teste si le facteur de compression est supérieur à 0,5
+    if (self->count / self->size >= 0.5) {
+        word_dict_rehash(self);
+    }
+    // Ensuite on ajoute le mot dans le bucket du dictionnaire à l'indice du
+    // hash modulo la taille du dictionnaire
+    const size_t hash = fnv_hash(word);
+    const size_t index = hash % self->size;
+    self->buckets[index] = word_dict_bucket_add(self->buckets[index], word);
+}
 
 void word_dict_fill_with_array(struct word_dict *self,
                                const struct word_array *array) {}

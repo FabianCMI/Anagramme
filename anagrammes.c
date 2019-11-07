@@ -61,24 +61,35 @@ bool string_are_anagrams(const char *str1, const char *str2) {
     }
     // Si toutes les cases (donc le compte des lettres) sont égales à 0, alors
     // les mots sont des anagrammes
-    for (size_t i = 0; i < LETTER_NUMBER; i++) {
+    size_t i = 0;
+    while (i < LETTER_NUMBER) {
+        // Si le compteur de la lettre est égal à 0, on passe à la lettre
+        // suivante
+        if (tab_letters_count[i] == 0) {
+            i++;
+            continue;
+        }
         if (tab_letters_count[i] > 0) {
             // Si une lettre de la premiere chaine n'est pas dans la deuxième,
             // alors les mots ne sont pas des anagrammes
             free(tab_letters_count);
             return false;
         }
-        if (tab_letters_count[i] < 0) {
-            // Si une lettre de la 2eme chaine est n'est pas dans la première,
-            // on l'incrémente mais on décrémente le compteur de jokers pour
-            // conpenser. Si celui-ci est négatif c'est que les mots ne sont pas
-            // des anagrammes
-            tab_letters_count[LETTER_NUMBER - 1]--;
-            tab_letters_count[i]++;
-            if (tab_letters_count[LETTER_NUMBER < 0]) {
-                free(tab_letters_count);
-                return false;
-            }
+
+        // Si une lettre de la 2eme chaine est n'est pas dans la première,
+        // on l'incrémente mais on décrémente le compteur de jokers pour
+        // conpenser. Si celui-ci est négatif c'est que les mots ne sont pas
+        // des anagrammes
+        tab_letters_count[LETTER_NUMBER - 1]--;
+        tab_letters_count[i]++;
+        if (tab_letters_count[LETTER_NUMBER - 1] < 0) {
+            free(tab_letters_count);
+            return false;
+        }
+        // On ne passe à la lettre suivante que si il ne reste plus d'occurences
+        // de celle en cours à traiter
+        if (tab_letters_count[i] == 0) {
+            i++;
         }
     }
     // Si les conditions précédentes sont passées c'est que les mots sont des
@@ -139,6 +150,7 @@ void word_array_destroy(struct word_array *self) {
     self->capacity = 0;
     self->size = 0;
     free(self->data);
+    free(self);
 }
 
 // Ajoute une string à la fin du tableau
@@ -168,7 +180,6 @@ void word_array_search_anagrams(const struct word_array *self, const char *word,
     }
     // Libération de la mémoire
     word_array_destroy(tmp_word_array);
-    free(tmp_word_array);
 }
 
 // Fonctions nécéssaires au quick sort
@@ -230,8 +241,10 @@ void word_array_read_file(struct word_array *self, const char *filename) {
 
     while (!feof(fp)) {
         fgets(word, WORD_LETTERS_MAX, fp);
-        clean_newline(word, WORD_LETTERS_MAX);
-        word_array_add(self, word);
+        if (!feof(fp)) {
+            clean_newline(word, WORD_LETTERS_MAX);
+            word_array_add(self, word);
+        }
     }
 
     fclose(fp);
@@ -369,8 +382,8 @@ void word_dict_search_anagrams(const struct word_dict *self, const char *word,
 }
 
 /******************* Part 4 *********************/
-// Implémentation de ces fonctions finalement inutilisée car il a été jugé plus
-// intuitif de les prendre directement en compte dans la fonction
+// Implémentation de ces fonctions finalement inutilisée car il a été jugé
+// plus intuitif de les prendre directement en compte dans la fonction
 // strings_are_anagrams
 void wildcard_create(struct wildcard *self) { self->count = 0; }
 
@@ -391,16 +404,9 @@ void wildcard_search(struct wildcard *self, const char *word) {
 void word_array_search_anagrams_wildcard(const struct word_array *self,
                                          const char *word,
                                          struct word_array *result) {
-    struct wildcard *jokers = malloc(sizeof(struct wildcard));
-    wildcard_create(jokers);
-    wildcard_search(jokers, word);
-    if (jokers->count == 0) {
-        word_array_search_anagrams(self, word, result);
-        free(jokers);
-        return;
-    }
-
-    free(jokers);
+    // On appelle la fonction de base puisque les wildcards sont déjà gérer
+    // dedans au lieu de dupliquer le code
+    word_array_search_anagrams(self, word, result);
 }
 
 void word_dict_search_anagrams_wildcard(const struct word_dict *self,

@@ -283,7 +283,7 @@ struct word_dict_bucket *word_dict_bucket_add(struct word_dict_bucket *bucket,
 
 void word_dict_create(struct word_dict *self) {
     self->count = 0;
-    self->size = 10;
+    self->size = 50;
     self->buckets = malloc(self->size * sizeof(struct word_dict_bucket *));
 }
 
@@ -342,7 +342,7 @@ void word_dict_add(struct word_dict *self, const char *word) {
     // hash modulo la taille du dictionnaire
     const size_t hash = fnv_hash(word);
     const size_t index = hash % self->size;
-    word_dict_bucket_add(self->buckets[index], word);
+    self->buckets[index] = word_dict_bucket_add(self->buckets[index], word);
 }
 
 void word_dict_fill_with_array(struct word_dict *self,

@@ -334,7 +334,7 @@ void word_dict_rehash(struct word_dict *self) {
 }
 
 void word_dict_add(struct word_dict *self, const char *word) {
-    // On test si le facteur de compression est supérieur à 0,5
+    // On teste si le facteur de compression est supérieur à 0,5
     if (self->count / self->size >= 0.5) {
         word_dict_rehash(self);
     }
@@ -342,7 +342,7 @@ void word_dict_add(struct word_dict *self, const char *word) {
     // hash modulo la taille du dictionnaire
     const size_t hash = fnv_hash(word);
     const size_t index = hash % self->size;
-    word_dict_bucket_add(self->buckets[index], word);
+    self->buckets[index] = word_dict_bucket_add(self->buckets[index], word);
 }
 
 void word_dict_fill_with_array(struct word_dict *self,

@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
         struct word_array *result = malloc(sizeof(struct word_array));
         word_array_create(result);
         gettimeofday(&start, NULL);
-        word_array_search_anagrams(word_array, buf, result);
+        word_array_search_anagrams_wildcard(word_array, buf, result);
         gettimeofday(&end, NULL);
         double elapse = (end.tv_sec - start.tv_sec) +
                         (end.tv_usec - start.tv_usec) / MILLION;
@@ -47,10 +47,8 @@ int main(int argc, char *argv[]) {
                result->size, elapse, buf);
         // Libération de la mémoire prise par le tableau de réponses
         word_array_destroy(result);
-        free(result);
     }
     // On libère la mémoire prise par le dictionnaire
     word_array_destroy(word_array);
-    free(word_array);
     return 0;
 }

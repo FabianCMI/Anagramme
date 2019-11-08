@@ -150,7 +150,6 @@ void word_array_destroy(struct word_array *self) {
     self->capacity = 0;
     self->size = 0;
     free(self->data);
-    free(self);
 }
 
 // Ajoute une string à la fin du tableau
@@ -180,6 +179,7 @@ void word_array_search_anagrams(const struct word_array *self, const char *word,
     }
     // Libération de la mémoire
     word_array_destroy(tmp_word_array);
+    free(tmp_word_array);
 }
 
 // Fonctions nécéssaires au quick sort
@@ -252,59 +252,47 @@ void word_array_read_file(struct word_array *self, const char *filename) {
 
 /******************* Part 3 *********************/
 
-void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {
-    struct word_dict_bucket *curr;
-    curr = bucket;
-    while (curr) {
-        struct word_dict_bucket *tmp = curr;
-        curr = curr->next;
-        free(tmp);
-        tmp = NULL;
-    }
-    bucket = NULL;
-}
-
-struct word_dict_bucket *list_insert_back(struct word_dict_bucket *self,
-                                          const char *word) {
-    if (self == NULL) {
-        struct word_dict_bucket *last = malloc(sizeof(struct word_dict_bucket));
-        last->word = word;
-        last->next = NULL;
-        return last;
-    }
-    self->next = list_insert_back(self->next, word);
-    return self;
-}
-
 struct word_dict_bucket *word_dict_bucket_add(struct word_dict_bucket *bucket,
                                               const char *word) {
-    return list_insert_back(bucket, word);
+    struct word_dict_bucket *new_bucket =
+        malloc(sizeof(struct word_dict_bucket));
+    new_bucket->word = word;
+    new_bucket->next = bucket;
+    return new_bucket;
+}
+
+void word_dict_bucket_destroy(struct word_dict_bucket *bucket) {
+    struct word_dict_bucket *curr = bucket;
+    while (bucket != NULL) {
+        bucket = bucket->next;
+        free(curr);
+        curr = bucket;
+    }
 }
 
 void word_dict_create(struct word_dict *self) {
     self->count = 0;
-    self->size = 50;
-    self->buckets = malloc(self->size * sizeof(struct word_dict_bucket *));
+    self->size = 10;
+    self->buckets = calloc(self->size, sizeof(struct word_dict_bucket *));
+    for (size_t i = 0; i < self->size; i++) {
+        self->buckets[i] = NULL;
+    }
 }
 
 void word_dict_destroy(struct word_dict *self) {
     // On crée un pointeur curr qui pointe sur les cases du tableau(qui eux
     // pointent sur une liste)
-    struct word_dict_bucket **curr = self->buckets;
     // Pour toutes les cases du tableau
     for (size_t i = 0; i < self->size; i++) {
-        // si le pointeur n'est pas null
-        if (self->buckets[i]) {
-            while (curr[i]) {
-                struct word_dict_bucket *tmp = curr[i];
-                curr[i] = curr[i]->next;
-                free(tmp);
-                tmp = NULL;
+        if (self->buckets != NULL) {
+            // si le pointeur n'est pas null
+            if (self->buckets[i] != NULL) {
+                word_dict_bucket_destroy(self->buckets[i]);
             }
-            self->buckets[i] = NULL;
         }
     }
-    // On initialise le nombre d'éléments et la taille du tableau à 0
+    free(self->buckets);
+    // On réinitialise le nombre d'éléments et la taille du tableau à 0
     self->count = 0;
     self->size = 0;
 }
@@ -329,12 +317,36 @@ size_t fnv_hash(const char *key) {
 }
 
 void word_dict_rehash(struct word_dict *self) {
-    // On double la taille du tableau
-    self->size *= 2;
+    // On crée un tableau de taille doublée
+    struct word_dict *self2 = malloc(sizeof(struct word_dict));
+    self2->size = self->size * 2;
+    self2->count = 0;
+    self2->buckets = calloc(self2->size, sizeof(struct word_dict_bucket *));
+
+    // On ajoute chaque mot du tableau initial dans le tableau de taille
+    // doublée
+    struct word_dict_bucket *pointer = NULL;
+    for (size_t i = 0; i < self->size; ++i) {
+        pointer = self->buckets[i];
+        while (pointer != NULL) {
+            word_dict_add(self2, pointer->word);
+            pointer = pointer->next;
+        }
+    }
+
+    // On free le tableau initial et on le remplace par le nouveau tableau
+    word_dict_destroy(self);
+    self->buckets = self2->buckets;
+    self->count = self2->count;
+    self->size = self2->size;
+
+    // On libère la table de transition
+    self2->buckets = NULL;
+    free(self2);
 }
 
 void word_dict_add(struct word_dict *self, const char *word) {
-    // On test si le facteur de compression est supérieur à 0,5
+    // On teste si le facteur de compression est supérieur à 0,5
     if (self->count / self->size >= 0.5) {
         word_dict_rehash(self);
     }
@@ -343,6 +355,7 @@ void word_dict_add(struct word_dict *self, const char *word) {
     const size_t hash = fnv_hash(word);
     const size_t index = hash % self->size;
     self->buckets[index] = word_dict_bucket_add(self->buckets[index], word);
+    self->count++;
 }
 
 void word_dict_fill_with_array(struct word_dict *self,
@@ -353,7 +366,18 @@ void word_dict_fill_with_array(struct word_dict *self,
 }
 
 void word_dict_search_anagrams(const struct word_dict *self, const char *word,
-                               struct word_array *result) {}
+                               struct word_array *result) {
+    size_t hash = fnv_hash(word);
+    const size_t index = hash % self->size;
+    struct word_dict_bucket *anagrammes = self->buckets[index];
+    while (anagrammes != NULL) {
+        if (strlen(anagrammes->word) == strlen(word)) {
+            word_array_add(result, anagrammes->word);
+        }
+        anagrammes = anagrammes->next;
+    }
+    word_array_sort(result);
+}
 
 /******************* Part 4 *********************/
 // Implémentation de ces fonctions finalement inutilisée car il a été jugé
